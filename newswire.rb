@@ -10,7 +10,7 @@ require 'fast_xs'
 
 options = {}
 parser = OptionParser.new do |opts|
-  opts.banner = "Usage: --url=https://www.url.com/articles/1 --slant=0"
+  opts.banner = "Usage: --url=https://www.url.com/articles/1 --slant=0i"
 
   opts.on("-i", "--init", "Start over with a new data file.") do |v|
     options[:init] = v
