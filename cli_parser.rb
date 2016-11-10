@@ -2,16 +2,16 @@ require 'optparse'
 
 class CLIParser
 
-  DEFAULT_DATA_FILE = "db.csv"
+  DEFAULT_DATA_FILE = 'db.csv'
   DEFAULT_POLITICAL_SLANT = 0
 
   attr_reader :options, :parser, :args
 
-  def initialize(args)
+  def initialize(args, options = Hash.new)
     @args    = args
     @options = {
       init:  false,
-      file:  DEFAULT_DATA_FILE,
+      file:  options[:file] || DEFAULT_DATA_FILE,
       url:   false,
       slant: DEFAULT_POLITICAL_SLANT,
       css:   'body'

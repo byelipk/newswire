@@ -1,18 +1,22 @@
-require 'net/http'
-require 'uri'
 require 'csv'
 require 'nokogiri'
 require 'pry'
 require 'fast_blank'
 require 'xor'
 require 'fast_xs'
-require 'yaml'
-require 'json'
+require 'base64'
 
 require_relative 'cli_parser'
+require_relative 'repo'
+require_relative 'text_cleaner'
 
 
-options = CLIParser.new(ARGV).parse!
+# Get any default options we have
+REPO_OPTS = YAML.load(File.read("./repo.yml"))
+
+# Parse options we pass through the command line
+parser    = CLIParser.new(ARGV, file: REPO_OPTS[:file])
+options   = parser.parse!
 
 # Are we reinitializing the project?
 if options[:init]
@@ -32,35 +36,30 @@ unless options[:url]
     "Must supply a valid url so we can fetch an article."
 end
 
+# Fetch the political article and process it so we have the
+# raw text of the html page, minus things like script, img, etc...
 puts "Making request to #{options[:url]}..."
 
-uri = URI.parse(options[:url])
-res = Net::HTTP.get(uri)
-doc = Nokogiri::HTML(res)
+res  = Repo.fetch_article(options[:url])
+text = TextCleaner.clean(res, options)
 
-# Clean up the html doc to save bytes
-puts "Cleaning html doc..."
+# Now that we have the raw text we can pull the current data set from github
+puts "Fetching current repository..."
 
-body = doc.css(options[:css])
-body.css('script').remove
-body.css('noscript').remove
-body.css('iframe').remove
-body.css('form').remove
-body.css('svg').remove
-body.css('video').remove
-body.css('img').remove
-body.css('canvas').remove
+curr = Repo.fetch_repo(REPO_OPTS['db_url'])
 
-# Remove excessive spacing
-text = body.text.gsub(/\s\s+/, '')
+# Transform db into an array of arrays
+db = CSV.parse(Base64.decode64(curr["content"]))
 
-# repo_options = YAML.load(File.read("./repo.yml"))
-# repo = JSON.parse(
-#   Net::HTTP.get(
-#     URI.parse(repo_options["repo_url"])))
+# Append new data to csv file
+db.push([ options[:url], text, options[:slant]])
 
-
-puts "Appending data to #{options[:file]}..."
-CSV.open(options[:file], "a+") do |row|
-  row << [ options[:url], text, options[:slant] ]
-end
+# Required data fields
+domain  = URI.parse(options[:url]).host.gsub(/^w{3}\./, '')
+res     = Repo.update_repo(
+  REPO_OPTS['db_url'],
+  path: curr['path'],
+  message: "New data from #{domain}",
+  content: Base64.encode64(db.to_s),
+  sha: curr['sha']
+)
