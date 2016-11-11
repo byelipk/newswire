@@ -5,6 +5,7 @@ require 'fast_blank'
 require 'xor'
 require 'fast_xs'
 require 'base64'
+require 'boilerpipe'
 
 require_relative 'cli_parser'
 require_relative 'repo'
@@ -39,21 +40,24 @@ end
 # Fetch the political article and process it so we have the
 # raw text of the html page, minus things like script, img, etc...
 puts "Making request to #{options[:url]}..."
-
-res = Boilerpipe.extract(uri, {:output => :json})
+res = JSON.parse(
+  Boilerpipe.extract(
+    URI.parse(options[:url]), {:output => :json}))
 
 # Now that we have the raw text we can pull the current data set from github
 puts "Fetching current repository..."
-
 curr = Repo.fetch_repo(REPO_OPTS['db_url'])
-
-# Transform db into an array of arrays
-db = CSV.parse(Base64.decode64(curr["content"]))
+db   = CSV.parse(Base64.decode64(curr["content"]))
 
 # Append new data to csv file
 string = CSV.generate do |csv|
   db.map { |r| csv << r }
-  csv << [ options[:url], text, options[:slant] ]
+  csv << [
+    options[:url],
+    res["response"]["title"],
+    res["response"]["content"],
+    options[:slant]
+  ]
 end
 
 # Update the repo
