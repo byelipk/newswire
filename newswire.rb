@@ -25,7 +25,7 @@ if options[:init]
   `rm -f #{options[:file]}`
 
   CSV.open(options[:file], "w") do |row|
-    row << ["URL", "title" "content", "slant"]
+    row << ["URL", "title", "content", "slant"]
   end
 
   exit(1)
