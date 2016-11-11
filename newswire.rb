@@ -54,14 +54,15 @@ db = CSV.parse(Base64.decode64(curr["content"]))
 # Append new data to csv file
 db.push([ options[:url], text, options[:slant]])
 
-# Required data fields
+# Update the repo
+string  = db.map {|row| row.join(',')}.join('\n')
 binding.pry
 domain  = URI.parse(options[:url]).host.gsub(/^w{3}\./, '')
-res     = Repo.update_repo(
+res = Repo.update_repo(
   REPO_OPTS['db_url'],
   REPO_OPTS['github_token'],
   path: curr['path'],
   message: "New data from #{domain}",
-  content: Base64.encode64(db.to_s),
+  content: Base64.encode64(string),
   sha: curr['sha']
 )
