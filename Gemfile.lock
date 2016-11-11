@@ -1,6 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    boilerpipe (0.0.4)
     byebug (9.0.6)
     coderay (1.1.1)
     fast_blank (1.0.0)
@@ -28,6 +29,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  boilerpipe
   fast_blank
   fast_xor
   fast_xs

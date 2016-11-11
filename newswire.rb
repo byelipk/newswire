@@ -25,7 +25,7 @@ if options[:init]
   `rm -f #{options[:file]}`
 
   CSV.open(options[:file], "w") do |row|
-    row << ["URL", "html", "slant"]
+    row << ["URL", "title" "content", "slant"]
   end
 
   exit(1)
@@ -40,8 +40,7 @@ end
 # raw text of the html page, minus things like script, img, etc...
 puts "Making request to #{options[:url]}..."
 
-res  = Repo.fetch_article(options[:url])
-text = TextCleaner.clean(res, options)
+res = Boilerpipe.extract(uri, {:output => :json})
 
 # Now that we have the raw text we can pull the current data set from github
 puts "Fetching current repository..."

@@ -8,3 +8,6 @@ gem 'pry-byebug'
 gem 'fast_blank'
 gem 'fast_xor'
 gem 'fast_xs'
+
+# Remove boiler plate from html
+gem 'boilerpipe'
