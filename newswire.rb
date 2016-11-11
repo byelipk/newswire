@@ -52,11 +52,12 @@ curr = Repo.fetch_repo(REPO_OPTS['db_url'])
 db = CSV.parse(Base64.decode64(curr["content"]))
 
 # Append new data to csv file
-db.push([ options[:url], text, options[:slant]])
+string = CSV.generate do |csv|
+  db.map { |r| csv << r }
+  csv << [ options[:url], text, options[:slant] ]
+end
 
 # Update the repo
-string  = db.map {|row| row.join(',')}.join('\n')
-binding.pry
 domain  = URI.parse(options[:url]).host.gsub(/^w{3}\./, '')
 res = Repo.update_repo(
   REPO_OPTS['db_url'],
