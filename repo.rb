@@ -3,11 +3,14 @@ require 'uri'
 require 'csv'
 require 'yaml'
 require 'json'
+require 'boilerpipe'
 
 class Repo
-  def self.fetch_article(url)
-    Net::HTTP.get(
-      URI.parse(url))
+
+  def self.fetch_boilerpipe(url)
+    JSON.parse(
+      Boilerpipe.extract(
+        URI.parse(url), {:output => :json}))
   end
 
   def self.fetch_repo(url)

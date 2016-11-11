@@ -5,7 +5,6 @@ require 'fast_blank'
 require 'xor'
 require 'fast_xs'
 require 'base64'
-require 'boilerpipe'
 
 require_relative 'cli_parser'
 require_relative 'repo'
@@ -32,17 +31,22 @@ if options[:init]
   exit(1)
 end
 
+# Have we passed in a url?
 unless options[:url]
   raise ArgumentError,
     "Must supply a valid url so we can fetch an article."
 end
 
+# Have we given the url a political slant?
+unless options[:slant]
+  raise ArgumentError,
+    "Must supply a political slant."
+end
+
 # Fetch the political article and process it so we have the
 # raw text of the html page, minus things like script, img, etc...
 puts "Making request to #{options[:url]}..."
-res = JSON.parse(
-  Boilerpipe.extract(
-    URI.parse(options[:url]), {:output => :json}))
+res = Repo.fetch_boilerpipe(options[:url])
 
 # Now that we have the raw text we can pull the current data set from github
 puts "Fetching current repository..."
